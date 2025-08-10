@@ -127,6 +127,31 @@ To enable backend features (authentication, database):
    - Real-time updates
    - File storage
 
+## Environment Variables
+
+### Setup
+
+1. Copy `.env.example` to `.env` and fill in:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+
+2. For Vercel deployment, go to Project Settings → Environment Variables and add:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+
+3. Development:
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+### Security Note
+
+Never commit real Supabase keys to the repository. If keys were previously hardcoded:
+1. Rotate keys in Supabase: Settings → API → "Reset" anon key
+2. Update new keys in your local `.env` and Vercel env vars
+3. Commit changes without keys (only `.env.example`)
+
 ## Development
 
 ### Available Scripts
