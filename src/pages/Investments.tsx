@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable, Column } from '@/components/DataTable';
 import { LineChart } from '@/components/LineChart';
+import { InvestmentFilters } from '@/components/InvestmentFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PlusCircle, Download, TrendingUp, DollarSign, Target, Percent } from 'lucide-react';
+import { fetchInvestments, fetchBdcs, exportToCSV } from '@/lib/api';
+import type { Investment, Bdc } from '@/types/db';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock investment data
 const investmentData = [
@@ -167,6 +172,100 @@ const portfolioStats = [
 ];
 
 export default function Investments() {
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [bdcs, setBdcs] = useState<Bdc[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    search: '',
+    bdcId: '',
+    type: '',
+    dateRange: { from: undefined, to: undefined }
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [investmentData, bdcData] = await Promise.all([
+          fetchInvestments(filters),
+          fetchBdcs()
+        ]);
+        setInvestments(investmentData);
+        setBdcs(bdcData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load investment data. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [filters, toast]);
+
+  const handleExport = () => {
+    const columns = [
+      { key: 'portfolio_company' as keyof Investment, label: 'Company' },
+      { key: 'investment_type' as keyof Investment, label: 'Type' },
+      { key: 'industry' as keyof Investment, label: 'Industry' },
+      { key: 'fair_value' as keyof Investment, label: 'Fair Value' },
+      { key: 'fmv_pct_par' as keyof Investment, label: 'FMV % Par' },
+      { key: 'fmv_pct_cost' as keyof Investment, label: 'FMV % Cost' }
+    ];
+    
+    exportToCSV(investments, 'investments-export', columns);
+    toast({
+      title: "Export Complete",
+      description: "Investment data has been exported successfully.",
+    });
+  };
+
+  const investmentColumns: Column<Investment>[] = [
+    {
+      key: 'portfolio_company',
+      label: 'Company',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-sm text-muted-foreground">{row.investment_type}</div>
+        </div>
+      )
+    },
+    {
+      key: 'industry',
+      label: 'Industry',
+      sortable: true,
+      render: (value) => <Badge variant="outline">{value}</Badge>
+    },
+    {
+      key: 'fair_value',
+      label: 'Fair Value',
+      sortable: true,
+      render: (value) => value ? `$${value.toLocaleString()}` : 'N/A'
+    },
+    {
+      key: 'fmv_pct_par',
+      label: 'FMV % Par',
+      sortable: true,
+      render: (value) => value ? `${value.toFixed(1)}%` : 'N/A'
+    },
+    {
+      key: 'fmv_pct_cost',
+      label: 'FMV % Cost',
+      sortable: true,
+      render: (value) => value ? `${value.toFixed(1)}%` : 'N/A'
+    }
+  ];
+
+  const bdcOptions = bdcs.map(bdc => ({ id: bdc.cik, name: bdc.name }));
+  const typeOptions = Array.from(new Set(investments.map(inv => inv.investment_type)));
+
   return (
     <Layout>
       <div className="container py-8">
@@ -174,22 +273,26 @@ export default function Investments() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">My Investments</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Investments</h1>
               <p className="text-muted-foreground">
-                Track your BDC portfolio performance and dividend income.
+                Browse and analyze BDC investment portfolios and performance data.
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleExport} disabled={loading || !investments.length}>
                 <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-              <Button>
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Add Investment
+                Export CSV
               </Button>
             </div>
           </div>
+
+          {/* Filters */}
+          <InvestmentFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            bdcOptions={bdcOptions}
+            typeOptions={typeOptions}
+          />
 
           {/* Portfolio Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -254,17 +357,26 @@ export default function Investments() {
           {/* Investments Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Investment Holdings</CardTitle>
+              <CardTitle>Investment Data</CardTitle>
               <CardDescription>
-                Detailed view of your BDC investment positions
+                Detailed view of BDC investment portfolios and performance metrics
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={investmentData}
-                columns={columns}
-                searchPlaceholder="Search investments..."
-              />
+              {loading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <DataTable
+                  data={investments}
+                  columns={investmentColumns}
+                  searchPlaceholder="Search investments..."
+                />
+              )}
             </CardContent>
           </Card>
         </div>

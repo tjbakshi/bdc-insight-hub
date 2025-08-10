@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { LineChart } from '@/components/LineChart';
+import { TrendControls } from '@/components/TrendControls';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Activity, AlertTriangle } from 'lucide-react';
+import { fetchTrendData } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock trend data
 const yieldTrendData = [
@@ -61,6 +65,38 @@ const marketInsights = [
 ];
 
 export default function Trends() {
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [metric, setMetric] = useState<'fmv_pct_par' | 'fmv_pct_cost'>('fmv_pct_par');
+  const [scope, setScope] = useState<'bdc' | 'company'>('bdc');
+  const [keyInput, setKeyInput] = useState('');
+  const { toast } = useToast();
+
+  const handleApplyFilters = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchTrendData(metric, scope, keyInput);
+      setTrendData(data);
+      toast({
+        title: "Trends Updated",
+        description: "Trend analysis has been updated with your selected parameters.",
+      });
+    } catch (error) {
+      console.error('Error loading trend data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load trend data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleApplyFilters();
+  }, []);
+
   return (
     <Layout>
       <div className="container py-8">
@@ -73,30 +109,58 @@ export default function Trends() {
             </p>
           </div>
 
-          {/* Yield Trends */}
+          {/* Trend Controls */}
+          <TrendControls
+            metric={metric}
+            scope={scope}
+            keyInput={keyInput}
+            onMetricChange={setMetric}
+            onScopeChange={setScope}
+            onKeyInputChange={setKeyInput}
+            onApplyFilters={handleApplyFilters}
+          />
+
+          {/* Trend Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <LineChart
-              title="Yield Trends"
-              data={yieldTrendData}
-              lines={[
-                { dataKey: 'avgYield', name: 'Average Yield', color: 'hsl(var(--primary))' },
-                { dataKey: 'topYield', name: 'Top Yield', color: 'hsl(var(--success))' },
-                { dataKey: 'lowYield', name: 'Lowest Yield', color: 'hsl(var(--warning))' }
-              ]}
-              xAxisKey="month"
-              height={300}
-            />
-            
-            <LineChart
-              title="Premium/Discount Trends"
-              data={premiumTrendData}
-              lines={[
-                { dataKey: 'avgPremium', name: 'Avg Premium', color: 'hsl(var(--warning))' },
-                { dataKey: 'avgDiscount', name: 'Avg Discount', color: 'hsl(var(--success))' }
-              ]}
-              xAxisKey="month"
-              height={300}
-            />
+            {loading ? (
+              <>
+                <Card>
+                  <CardContent className="p-6">
+                    <Skeleton className="h-6 w-32 mb-4" />
+                    <Skeleton className="h-64 w-full" />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <Skeleton className="h-6 w-32 mb-4" />
+                    <Skeleton className="h-64 w-full" />
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <>
+                <LineChart
+                  title={`${metric === 'fmv_pct_par' ? 'FMV % Par' : 'FMV % Cost'} Trends`}
+                  data={trendData.length ? trendData : yieldTrendData}
+                  lines={[
+                    { dataKey: 'value', name: metric === 'fmv_pct_par' ? 'FMV % Par' : 'FMV % Cost', color: 'hsl(var(--primary))' }
+                  ]}
+                  xAxisKey="month"
+                  height={300}
+                />
+                
+                <LineChart
+                  title="Premium/Discount Trends"
+                  data={premiumTrendData}
+                  lines={[
+                    { dataKey: 'avgPremium', name: 'Avg Premium', color: 'hsl(var(--warning))' },
+                    { dataKey: 'avgDiscount', name: 'Avg Discount', color: 'hsl(var(--success))' }
+                  ]}
+                  xAxisKey="month"
+                  height={300}
+                />
+              </>
+            )}
           </div>
 
           {/* Sector Performance */}

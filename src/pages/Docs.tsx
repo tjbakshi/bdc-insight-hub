@@ -163,6 +163,48 @@ export default function Docs() {
             ))}
           </div>
 
+          {/* Data Sources Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Data Sources</CardTitle>
+              <CardDescription>
+                Understanding the data behind BDC Tracker
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-2">SEC BDC Data Sets</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Our primary data source comes from SEC filings submitted by Business Development Companies. 
+                    This includes quarterly and annual reports (10-K, 10-Q) that contain detailed investment portfolio information.
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                    <li>• Investment-level data including fair value, cost basis, and portfolio company details</li>
+                    <li>• Interest rates, maturity dates, and security types</li>
+                    <li>• Industry classifications and business descriptions</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold mb-2">SOI (Schedule of Investments)</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Schedule of Investments data provides granular details about each investment holding, 
+                    extracted directly from SEC filings.
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold mb-2">Data Coverage</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Our dataset includes comprehensive BDC investment data starting from August 1, 2022. 
+                    Data is updated quarterly following SEC filing deadlines.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Additional Resources */}
           <Card>
             <CardHeader>

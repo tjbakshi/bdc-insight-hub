@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable, Column } from '@/components/DataTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, DollarSign, Percent, BarChart3 } from 'lucide-react';
+import { fetchBdcs } from '@/lib/api';
+import type { Bdc } from '@/types/db';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data for BDC companies
 const bdcData = [
@@ -175,6 +179,57 @@ const stats = [
 ];
 
 export default function BDCs() {
+  const [bdcData, setBdcData] = useState<Bdc[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadBdcs = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchBdcs();
+        setBdcData(data);
+      } catch (error) {
+        console.error('Error loading BDCs:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load BDC data. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBdcs();
+  }, [toast]);
+
+  const bdcColumns: Column<Bdc>[] = [
+    {
+      key: 'name',
+      label: 'Company',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-sm text-muted-foreground">{row.ticker}</div>
+        </div>
+      )
+    },
+    {
+      key: 'ticker',
+      label: 'Ticker',
+      sortable: true,
+      render: (value) => <Badge variant="outline">{value}</Badge>
+    },
+    {
+      key: 'cik',
+      label: 'CIK',
+      sortable: true,
+      render: (value) => <span className="text-muted-foreground">{value}</span>
+    }
+  ];
+
   return (
     <Layout>
       <div className="container py-8">
@@ -189,22 +244,37 @@ export default function BDCs() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <Card key={stat.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <stat.icon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className={`text-xs ${stat.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
-                    {stat.change} from last month
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-4" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-16 mb-1" />
+                    <Skeleton className="h-3 w-24" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              stats.map((stat) => (
+                <Card key={stat.title}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      {stat.title}
+                    </CardTitle>
+                    <stat.icon className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stat.value}</div>
+                    <p className={`text-xs ${stat.trend === 'up' ? 'text-success' : 'text-destructive'}`}>
+                      {stat.change} from last month
+                    </p>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* BDC Table */}
@@ -212,15 +282,24 @@ export default function BDCs() {
             <CardHeader>
               <CardTitle>BDC Companies</CardTitle>
               <CardDescription>
-                Real-time data for all tracked Business Development Companies
+                All tracked Business Development Companies from our database
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={bdcData}
-                columns={columns}
-                searchPlaceholder="Search BDC companies..."
-              />
+              {loading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <DataTable
+                  data={bdcData}
+                  columns={bdcColumns}
+                  searchPlaceholder="Search BDC companies..."
+                />
+              )}
             </CardContent>
           </Card>
         </div>
