@@ -1,73 +1,160 @@
-# Welcome to your Lovable project
+# BDC Tracker
 
-## Project info
+Professional Business Development Company (BDC) investment tracking and analytics platform.
 
-**URL**: https://lovable.dev/projects/685d1791-6e86-442f-a3a2-18378f837bd5
+## Overview
 
-## How can I edit this code?
+BDC Tracker is a comprehensive SaaS dashboard for monitoring Business Development Company investments, providing real-time analytics, portfolio management, and market insights.
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+- **Investment Tracking**: Monitor your BDC portfolio with real-time data
+- **Market Analytics**: Comprehensive BDC market trends and sector analysis
+- **Portfolio Management**: Track performance, dividends, and allocation
+- **Data Visualization**: Interactive charts and reports
+- **Professional Dashboard**: Clean, responsive interface built for investors
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/685d1791-6e86-442f-a3a2-18378f837bd5) and start prompting.
+## Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Charts**: Recharts for data visualization
+- **Routing**: React Router v6
+- **State Management**: React Query (TanStack Query)
+- **Authentication**: Supabase Auth (when connected)
+- **Database**: Supabase (when connected)
+- **Deployment**: Vercel (recommended)
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js 18+ and npm
+- Git
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd bdc-tracker
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+```bash
+npm install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Open [http://localhost:8080](http://localhost:8080) in your browser
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/
+│   ├── ui/              # shadcn/ui components
+│   ├── layout/          # Layout components (Navbar, Footer)
+│   ├── DataTable.tsx    # Reusable data table with sorting/filtering
+│   ├── LineChart.tsx    # Reusable chart component
+│   └── ErrorBoundary.tsx # Global error handling
+├── pages/
+│   ├── Landing.tsx      # Landing page (/)
+│   ├── BDCs.tsx         # BDC companies listing (/bdcs)
+│   ├── Investments.tsx  # Portfolio tracking (/investments)
+│   ├── Trends.tsx       # Market trends (/trends)
+│   ├── Admin.tsx        # Admin dashboard (/admin)
+│   ├── Docs.tsx         # Documentation (/docs)
+│   └── NotFound.tsx     # 404 page
+├── hooks/               # Custom React hooks
+├── lib/                 # Utilities and helpers
+└── assets/              # Images and static assets
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Routes
 
-## What technologies are used for this project?
+- `/` - Landing page with hero section and features
+- `/bdcs` - BDC companies data and analytics
+- `/investments` - Portfolio tracking and management
+- `/trends` - Market trends and sector analysis
+- `/admin` - System administration (protected)
+- `/docs` - Documentation and help
 
-This project is built with:
+## Key Components
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### DataTable
+Reusable table component with:
+- Sorting by columns
+- Search/filtering
+- Pagination
+- Responsive design
 
-## How can I deploy this project?
+### LineChart
+Recharts-based chart component with:
+- Multiple data series
+- Customizable colors
+- Responsive container
+- Tooltip and legend support
 
-Simply open [Lovable](https://lovable.dev/projects/685d1791-6e86-442f-a3a2-18378f837bd5) and click on Share -> Publish.
+### Layout System
+- Responsive navbar with mobile menu
+- Footer with version/commit info
+- Professional design system
+- Dark/light mode support
 
-## Can I connect a custom domain to my Lovable project?
+## Design System
 
-Yes, you can!
+The app uses a professional financial theme with:
+- Primary blue color scheme
+- Clean typography
+- Consistent spacing
+- Professional shadows and transitions
+- Responsive grid system
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Supabase Integration
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+To enable backend features (authentication, database):
+
+1. Click the green Supabase button in Lovable
+2. Connect your Supabase project
+3. This enables:
+   - User authentication
+   - Data persistence
+   - Real-time updates
+   - File storage
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### Code Style
+
+- TypeScript for type safety
+- ESLint for code quality
+- Tailwind CSS for styling
+- shadcn/ui for components
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is proprietary. All rights reserved.
+
+## Support
+
+For questions or support, please refer to the documentation at `/docs` or contact our support team.
